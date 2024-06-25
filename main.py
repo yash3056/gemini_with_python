@@ -3,6 +3,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import MultiLabelBinarizer
 from transformers import BertTokenizer, BertForSequenceClassification, Trainer, TrainingArguments
 import torch
+from torch.utils.data import Dataset, DataLoader
 
 # Load the dataset
 file_path = 'constraint_Hindi_Train - Sheet1.csv'
@@ -36,14 +37,14 @@ train_encodings = tokenize_function(X_train.tolist())
 val_encodings = tokenize_function(X_val.tolist())
 
 # Convert encodings to PyTorch tensors
-class HateSpeechDataset(torch.utils.data.Dataset):
+class HateSpeechDataset(Dataset):
     def __init__(self, encodings, labels):
         self.encodings = encodings
         self.labels = labels
 
     def __getitem__(self, idx):
         item = {key: torch.tensor(val[idx]) for key, val in self.encodings.items()}
-        item['labels'] = torch.tensor(self.labels[idx])
+        item['labels'] = torch.tensor(self.labels[idx], dtype=torch.float)
         return item
 
     def __len__(self):
@@ -54,13 +55,13 @@ val_dataset = HateSpeechDataset(val_encodings, y_val)
 
 # Define the training arguments
 training_args = TrainingArguments(
-    output_dir='/home/aza/workspace/hatespeech/output',          # output directory
+    output_dir='./results',          # output directory
     num_train_epochs=3,              # number of training epochs
-    per_device_train_batch_size=16,  # batch size for training
-    per_device_eval_batch_size=64,   # batch size for evaluation
+    per_device_train_batch_size=8,   # batch size for training
+    per_device_eval_batch_size=16,   # batch size for evaluation
     warmup_steps=500,                # number of warmup steps for learning rate scheduler
     weight_decay=0.01,               # strength of weight decay
-    logging_dir='/home/aza/workspace/hatespeech/logs',            # directory for storing logs
+    logging_dir='./logs',            # directory for storing logs
     logging_steps=10,
 )
 
