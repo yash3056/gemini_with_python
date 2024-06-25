@@ -29,6 +29,10 @@ X_train, X_val, y_train, y_val = train_test_split(data['Post'], labels, test_siz
 tokenizer = BertTokenizer.from_pretrained('bert-base-multilingual-cased')
 model = BertForSequenceClassification.from_pretrained('bert-base-multilingual-cased', num_labels=5)
 
+# Move model to GPU if available
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+model.to(device)
+
 # Tokenize the text data
 def tokenize_function(texts):
     return tokenizer(texts, padding="max_length", truncation=True, max_length=128)
